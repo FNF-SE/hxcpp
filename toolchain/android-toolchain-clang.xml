@@ -107,6 +107,7 @@
   -->
   <prefix value="lib"/>
   <lib name="-llog"/>
+  <ext value=".so"/>
     
 </linker>
     
