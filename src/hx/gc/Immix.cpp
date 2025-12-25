@@ -94,14 +94,8 @@ static bool sgAllocInit = 0;
 static bool sgInternalEnable = true;
 static void *sgObject_root = 0;
 // With virtual inheritance, stack pointers can point to the middle of an object
-#ifdef _MSC_VER
-// MSVC optimizes by taking the address of an initernal data member
 static int sgCheckInternalOffset = sizeof(void *)*2;
 static int sgCheckInternalOffsetRows = 1;
-#else
-static int sgCheckInternalOffset = 0;
-static int sgCheckInternalOffsetRows = 0;
-#endif
 
 int gInAlloc = false;
 
@@ -2134,8 +2128,21 @@ void MarkAllocUnchecked(void *inPtr,hx::MarkContext *__inCtx)
 
 void MarkObjectAllocUnchecked(hx::Object *inPtr,hx::MarkContext *__inCtx)
 {
+   if (!inPtr || ((size_t)inPtr & (sizeof(void*)-1)) || (size_t)inPtr < 0x10000) return;
+   unsigned int *headerPtr = (unsigned int *)inPtr - 1;
+   volatile char c_check = *(volatile char*)headerPtr; (void)c_check;
    size_t ptr_i = ((size_t)inPtr)-sizeof(int);
-   unsigned int flags =  *((unsigned int *)ptr_i);
+   unsigned int flags =  *headerPtr;
+
+   int sizeCheck = (flags & IMMIX_ALLOC_SIZE_MASK) >> IMMIX_ALLOC_SIZE_SHIFT;
+   if (sizeCheck > IMMIX_BLOCK_SIZE) {
+       #ifdef SHOW_MEM_EVENTS
+       GCLOG("MarkObjectAllocUnchecked: Object %p has corrupted size %d - Marking as SAFE LEAF\n", inPtr, sizeCheck);
+       #endif
+       ((unsigned char *)inPtr)[HX_ENDIAN_MARK_ID_BYTE] = gByteMarkID;
+       return;
+   }
+
    #ifdef HXCPP_GC_NURSERY
    if (!(flags & 0xff000000))
    {
@@ -3781,6 +3788,24 @@ public:
                         int size = ((header & IMMIX_ALLOC_SIZE_MASK) >> IMMIX_ALLOC_SIZE_SHIFT);
                         int allocSize = size + sizeof(int);
 
+                        if (allocSize < sizeof(int) || allocSize > IMMIX_BLOCK_SIZE) {
+                           #ifdef SHOW_MEM_EVENTS
+                           GCLOG("Corrupted object header detected in MoveBlocks: %d - Aborting Block Compaction\n", allocSize);
+                           #endif
+                           header = (0 << IMMIX_ALLOC_SIZE_SHIFT) | hx::gMarkID;
+                           ioStats.rowsInUse += from->mUsedRows;
+                           if (!from->isEmpty()) ioStats.emptyBlocks--;
+                           from->makeFull();
+                           goto next_block;
+                        }
+
+                        if (destPos < 0 || destLen < 0 || destLen > IMMIX_BLOCK_SIZE) {
+                           #ifdef SHOW_MEM_EVENTS
+                           GCLOG("Invalid destination state in MoveBlocks: pos=%d len=%d\n", destPos, destLen);
+                           #endif
+                           goto all_done; 
+                        }
+
                         while(allocSize + ALIGN_PADDING(destPos)>destLen)
                         {
                            hole++;
@@ -3874,6 +3899,9 @@ public:
                from->makeFull();
             }
          }
+
+         next_block:
+         ;
       }
 
       #ifdef SHOW_FRAGMENTATION
@@ -3991,6 +4019,22 @@ public:
                            int size = ((header & IMMIX_ALLOC_SIZE_MASK) >> IMMIX_ALLOC_SIZE_SHIFT);
                            int allocSize = size + sizeof(int);
 
+                           if (allocSize < sizeof(int) || allocSize > IMMIX_BLOCK_SIZE) {
+                               #ifdef SHOW_MEM_EVENTS
+                               GCLOG("Corrupted object header detected in MoveSurvivors: %d - Aborting Block Compaction\n", allocSize);
+                               #endif
+                               header = (0 << IMMIX_ALLOC_SIZE_SHIFT) | hx::gMarkID;
+                               if (from) from->makeFull();
+                               goto next_block;
+                           }
+
+                           if (destPos < 0 || destLen < 0 || destLen > IMMIX_BLOCK_SIZE) {
+                              #ifdef SHOW_MEM_EVENTS
+                              GCLOG("Invalid destination state in MoveSurvivors: pos=%d len=%d\n", destPos, destLen);
+                              #endif
+                              goto no_more_moves; 
+                           }
+
                            // Find dest reqion ...
                            while(destHole==0 || destLen < ALIGN_PADDING(destPos) + allocSize)
                            {
@@ -4081,6 +4125,9 @@ public:
                   from->makeFull();
                }
             }
+
+         next_block:
+         ;
       }
 
       #ifdef SHOW_FRAGMENTATION
@@ -5007,7 +5054,7 @@ public:
          countRows(stats);
          size_t currentRows = stats.rowsInUse + stats.fraggedRows + freeFraggedRows;
          double filled = (double)(currentRows) / (double)(mAllBlocks.size()*IMMIX_USEFUL_LINES);
-         if (filled>0.85)
+         if (filled>0.8)
          {
             // Failure of generational estimation
             int retained = currentRows - mRowsInUse;
@@ -5556,6 +5603,7 @@ public:
             return true;
          if (block==mAllBlocks[max]->mPtr)
             return true;
+         if (((size_t)block) & (sizeof(void*)-1)) return false;
          if (block>mAllBlocks[0]->mPtr && block<mAllBlocks[max]->mPtr)
          {
             while(min<max-1)
@@ -5724,7 +5772,16 @@ void MarkConservative(int *inBottom, int *inTop,hx::MarkContext *__inCtx)
             else
             {
                BlockData *block = (BlockData *)( ((size_t)vptr) & IMMIX_BLOCK_BASE_MASK);
-               BlockDataInfo *info = (*gBlockInfo)[block->mId];
+               int blockId = block->mId;
+               if (blockId < 0 || blockId >= gBlockInfo->size()) {
+                   #ifdef SHOW_MEM_EVENTS
+                   GCLOG("MarkConservative: Invalid block ID %d for ptr %p\n", blockId, vptr);
+                   #endif
+                   continue;
+               }
+
+               BlockDataInfo *info = (*gBlockInfo)[blockId];
+               if (!info) continue;
 
                int pos = (int)(((size_t)vptr) & IMMIX_BLOCK_OFFSET_MASK);
                AllocType t = sgCheckInternalOffset ?
@@ -7085,6 +7142,12 @@ void __hxcpp_gc_safe_point()
 {
     if (hx::gPauseForCollect)
       hx::PauseForCollect();
+}
+
+void __hxcpp_gc_verify_integrity()
+{
+   __hxcpp_gc_safe_point();
+   __hxcpp_gc_verify_heap();
 }
 
 //#define HXCPP_FORCE_OBJ_MAP
