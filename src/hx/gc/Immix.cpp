@@ -7144,6 +7144,12 @@ void __hxcpp_gc_safe_point()
       hx::PauseForCollect();
 }
 
+void __hxcpp_gc_verify_heap()
+{
+   if (sGlobalAlloc)
+      sGlobalAlloc->VerifyHeap();
+}
+
 void __hxcpp_gc_verify_integrity()
 {
    __hxcpp_gc_safe_point();
