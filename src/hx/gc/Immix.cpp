@@ -23,6 +23,10 @@
 #include <signal.h>
 #include <setjmp.h>
 #endif
+#if defined(HX_MACOS) || defined(HX_IOS)
+#include <mach/mach.h>
+#include <mach/task_info.h>
+#endif
 
 
 static bool sgIsCollecting = false;
