@@ -6713,21 +6713,29 @@ public:
                {
                   CONTEXT ctx;
                   memset(&ctx, 0, sizeof(ctx));
-                  #if defined(HXCPP_M64) || defined(HXCPP_ARM64)
+                  #if defined(HXCPP_ARM64)
                   ctx.ContextFlags = CONTEXT_FULL;
                   if (GetThreadContext(hThread, &ctx))
                   {
-                     int *bottom = (int *)(ctx.Rsp);
-                     mBottomOfStack = bottom;
-                     mSuspendedContext = ctx;
+                      int *bottom = (int *)(ctx.Sp);
+                      mBottomOfStack = bottom;
+                      mSuspendedContext = ctx;
+                  }
+                  #elif defined(HXCPP_M64)
+                  ctx.ContextFlags = CONTEXT_FULL;
+                  if (GetThreadContext(hThread, &ctx))
+                  {
+                      int *bottom = (int *)(ctx.Rsp);
+                      mBottomOfStack = bottom;
+                      mSuspendedContext = ctx;
                   }
                   #else
                   ctx.ContextFlags = CONTEXT_FULL;
                   if (GetThreadContext(hThread, &ctx))
                   {
-                     int *bottom = (int *)(ctx.Esp);
-                     mBottomOfStack = bottom;
-                     mSuspendedContext = ctx;
+                      int *bottom = (int *)(ctx.Esp);
+                      mBottomOfStack = bottom;
+                      mSuspendedContext = ctx;
                   }
                   #endif
                   mSuspendedThread = hThread;
