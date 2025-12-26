@@ -6713,7 +6713,7 @@ public:
                {
                   CONTEXT ctx;
                   memset(&ctx, 0, sizeof(ctx));
-                  #if defined(_M_X64)
+                  #if (defined(HXCPP_M64)||defined(HXCPP_ARM64))
                   ctx.ContextFlags = CONTEXT_FULL;
                   if (GetThreadContext(hThread, &ctx))
                   {
