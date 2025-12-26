@@ -6713,7 +6713,7 @@ public:
                {
                   CONTEXT ctx;
                   memset(&ctx, 0, sizeof(ctx));
-                  #if (defined(HXCPP_M64)||defined(HXCPP_ARM64))
+                  #if defined(HXCPP_M64) || defined(HXCPP_ARM64)
                   ctx.ContextFlags = CONTEXT_FULL;
                   if (GetThreadContext(hThread, &ctx))
                   {
@@ -8719,7 +8719,7 @@ void __hxcpp_gc_verify_integrity()
 
 //#define HXCPP_FORCE_OBJ_MAP
 
-#if (defined(HXCPP_M64)||defined(HXCPP_ARM64)) || defined(HXCPP_GC_MOVING) || defined(HXCPP_FORCE_OBJ_MAP)
+#if defined(HXCPP_M64) || defined(HXCPP_ARM64) || defined(HXCPP_GC_MOVING) || defined(HXCPP_FORCE_OBJ_MAP)
 #define HXCPP_USE_OBJECT_MAP
 #endif
 
@@ -8844,7 +8844,7 @@ unsigned int __hxcpp_obj_hash(Dynamic inObj)
    if (!ProbeReadSafe(obj)) return 0;
    #endif
    
-   #if defined(HXCPP_M64)||defined(HXCPP_ARM64))
+   #if defined(HXCPP_M64) || defined(HXCPP_ARM64)
    size_t h64 = (size_t)obj;
    return (unsigned int)(h64>>2) ^ (unsigned int)(h64>>32);
    #else
