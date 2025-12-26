@@ -3403,7 +3403,7 @@ void *HxAllocGCBlock(size_t inSize)
    {
       size_t size = 65536;
       size *= IMMIX_BLOCK_SIZE;
-      #if defined(HX_WINDOWS) && defined(HXCPP_M64)
+      #if defined(HX_WINDOWS) && (defined(HXCPP_M64)||defined(HXCPP_ARM64))
       chunkData = (unsigned char *)0x100000000;
       VirtualAlloc(chunkData,size,MEM_COMMIT|MEM_RESERVE,PAGE_READWRITE);
       #else
@@ -7208,7 +7208,7 @@ BlockDataInfo *GlobalAllocator::GetFreeBlock(int inRequiredBytes, hx::ImmixAlloc
       if (!result)
       {
          GCLOG("Memory exhausted.\n");
-         #ifndef HXCPP_M64
+         #if !defined(HXCPP_M64) && !defined(HXCPP_ARM64)
          GCLOG(" try 64 bit build.\n");
          #endif
          #ifndef HXCPP_GC_BIG_BLOCKS
@@ -8111,7 +8111,7 @@ void *InternalNew(int inSize,bool inIsObject)
       }
       else
       {
-         #if defined(HXCPP_GC_MOVING) && defined(HXCPP_M64)
+         #if defined(HXCPP_GC_MOVING) && (defined(HXCPP_M64)||defined(HXCPP_ARM64))
          if (inSize<8)
          {
             void *res = tla->CallAlloc(8,0);
@@ -8265,7 +8265,7 @@ void *InternalRealloc(int inFromSize, void *inData,int inSize, bool inExpand)
    {
       LocalAllocator *tla = GetLocalAlloc();
 
-      #if defined(HXCPP_GC_MOVING) && defined(HXCPP_M64)
+      #if defined(HXCPP_GC_MOVING) && (defined(HXCPP_M64)||defined(HXCPP_ARM64))
       if (inSize<8)
           new_data =  tla->CallAlloc(8,0);
       else
@@ -8719,7 +8719,7 @@ void __hxcpp_gc_verify_integrity()
 
 //#define HXCPP_FORCE_OBJ_MAP
 
-#if defined(HXCPP_M64) || defined(HXCPP_GC_MOVING) || defined(HXCPP_FORCE_OBJ_MAP)
+#if (defined(HXCPP_M64)||defined(HXCPP_ARM64)) || defined(HXCPP_GC_MOVING) || defined(HXCPP_FORCE_OBJ_MAP)
 #define HXCPP_USE_OBJECT_MAP
 #endif
 
@@ -8844,7 +8844,7 @@ unsigned int __hxcpp_obj_hash(Dynamic inObj)
    if (!ProbeReadSafe(obj)) return 0;
    #endif
    
-   #if defined(HXCPP_M64)
+   #if defined(HXCPP_M64)||defined(HXCPP_ARM64))
    size_t h64 = (size_t)obj;
    return (unsigned int)(h64>>2) ^ (unsigned int)(h64>>32);
    #else
