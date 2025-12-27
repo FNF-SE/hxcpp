@@ -161,7 +161,6 @@ static int sLargeAllocRefreshEnabled = 1;
 static bool sEnableGCLog = false;
 
 // Forward declaration needed for MaybeMinorCollect
-size_t __hxcpp_gc_garbage_estimate();
 size_t __hxcpp_gc_get_reserved_bytes();
 
 static HxMutex *sMinorCollectLock = 0;
