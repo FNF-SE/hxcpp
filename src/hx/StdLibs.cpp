@@ -22,7 +22,7 @@ typedef int64_t __int64;
 #ifdef TIZEN
 #include <dlog.h>
 #endif
-#if defined(BLACKBERRY) || defined(GCW0)
+#if defined(HX_MACOS) || defined(HX_LINUX) || defined(BLACKBERRY) || defined(GCW0)
 #include <unistd.h>
 #endif
 #include <string>
@@ -325,29 +325,42 @@ void __trace(Dynamic inObj, Dynamic info)
 #ifdef HX_WINDOWS
    HANDLE handle = GetStdHandle(STD_OUTPUT_HANDLE);
    DWORD mode;
-   if (GetConsoleMode(handle, &mode))
+   if (!GetConsoleMode(handle, &mode))
    {
-      fflush(stdout);
-      String s;
-      if (info == null()) {
-         s = String("?? ") + text + String("\n");
-      } else {
-         String filename = Dynamic((info)->__Field(HX_CSTRING("fileName"), HX_PROP_DYNAMIC))->toString();
-         int line = Dynamic((info)->__Field(HX_CSTRING("lineNumber"), HX_PROP_DYNAMIC))->__ToInt();
-         s = filename + String(":") + line + String(": ") + text + String("\n");
-      }
-      if (s.isUTF16Encoded())
-      {
-         WriteConsoleAllW(handle, s.__WCStr(), s.length);
-      } else {
-         // ascii
-         WriteConsoleAllA(handle, s.__CStr(), s.length);
-      }
+      return;
+   }
+
+   fflush(stdout);
+
+   String s;
+
+   if (info==null()) {
+      s = String("?? ") + text + String("\n");
+   } else {
+      String filename = Dynamic((info)->__Field(HX_CSTRING("fileName"), HX_PROP_DYNAMIC))->toString();
+      int line = Dynamic((info)->__Field(HX_CSTRING("lineNumber"), HX_PROP_DYNAMIC))->__ToInt();
+      s = filename + String(":") + line + String(": ") + text + String("\n");
+   }
+
+   if (s.isUTF16Encoded())
+   {
+      WriteConsoleAllW(handle, s.__WCStr(), s.length);
+   }
+   else
+   {
+      WriteConsoleAllA(handle, s.__CStr(), s.length);
+   }
+#else
+
+#if defined(HX_MACOS) || defined(HX_LINUX)
+   if (!isatty(STDOUT_FILENO))
+   {
       return;
    }
 #endif
 
    hx::strbuf convertBuf;
+
    if (info==null())
    {
       PRINTF("?? %s\n", text.raw_ptr() ? text.out_str(&convertBuf) : "null");
@@ -358,10 +371,10 @@ void __trace(Dynamic inObj, Dynamic info)
       int line = Dynamic((info)->__Field( HX_CSTRING("lineNumber") , HX_PROP_DYNAMIC))->__ToInt();
 
       hx::strbuf convertBuf;
-      //PRINTF("%s:%d: %s\n", filename, line, text.raw_ptr() ? text.out_str(&convertBuf) : "null");
       PRINTF("%s:%d: %s\n", filename, line, text.raw_ptr() ? text.out_str(&convertBuf) : "null");
    }
    fflush(stdout);
+#endif
 }
 
 void __hxcpp_exit(int inExitCode)
@@ -655,15 +668,25 @@ void __hxcpp_print_string(const String &inV)
 #ifdef HX_WINDOWS
    HANDLE handle = GetStdHandle(STD_OUTPUT_HANDLE);
    DWORD mode;
-   if (GetConsoleMode(handle, &mode) && inV.isUTF16Encoded())
+   if (!GetConsoleMode(handle, &mode))
    {
-      fflush(stdout);
-      WriteConsoleAllW(handle, inV.__WCStr(), inV.length);
+      return;
+   }
+
+   fflush(stdout);
+
+   WriteConsoleAllW(handle, inV.__WCStr(), inV.length);
+#else
+#if defined(HX_MACOS) || defined(HX_LINUX)
+   if (!isatty(STDOUT_FILENO))
+   {
       return;
    }
 #endif
+
    hx::strbuf convertBuf;
    PRINTF("%s", inV.out_str(&convertBuf) );
+#endif
 }
 
 void __hxcpp_println_string(const String &inV)
@@ -671,18 +694,30 @@ void __hxcpp_println_string(const String &inV)
 #ifdef HX_WINDOWS
    HANDLE handle = GetStdHandle(STD_OUTPUT_HANDLE);
    DWORD mode;
-   if (GetConsoleMode(handle, &mode) && inV.isUTF16Encoded())
+   if (!GetConsoleMode(handle, &mode))
    {
-      fflush(stdout);
-      WriteConsoleAllW(handle, inV.__WCStr(), inV.length);
-      fwrite("\n", 1, 1, stdout);
-      fflush(stdout);
+      return;
+   }
+
+   fflush(stdout);
+
+   WriteConsoleAllW(handle, inV.__WCStr(), inV.length);
+
+   fwrite("\n", 1, 1, stdout);
+
+   fflush(stdout);
+#else
+#if defined(HX_MACOS) || defined(HX_LINUX)
+   if (!isatty(STDOUT_FILENO))
+   {
       return;
    }
 #endif
+
    hx::strbuf convertBuf;
    PRINTF("%s\n", inV.out_str(&convertBuf));
    fflush(stdout);
+#endif
 }
 
 
