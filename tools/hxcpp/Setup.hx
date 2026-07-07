@@ -519,8 +519,8 @@ class Setup
             };
 
             if (minPlatform == null) {
-               Log.warn("Defaulting to Android platform 24");
-               minPlatform = 24;
+               Log.warn("Defaulting to Android platform 26");
+               minPlatform = 26;
             }
 
             defines.set("HXCPP_ANDROID_PLATFORM", Std.string(minPlatform));
