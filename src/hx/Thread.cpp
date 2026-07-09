@@ -65,7 +65,7 @@ struct Deque : public Array_obj<Dynamic>
 		mSemaphore.Set();
 	}
 
-	
+
 	Dynamic PopFront(bool inBlock)
 	{
 		hx::EnterGCFreeZone();
@@ -106,7 +106,7 @@ struct Deque : public Array_obj<Dynamic>
 		mSemaphore.QSet();
 	}
 
-	
+
 	Dynamic PopFront(bool inBlock)
 	{
 		hx::EnterGCFreeZone();
@@ -248,7 +248,7 @@ Dynamic __hxcpp_condition_create(void)
 void __hxcpp_condition_acquire(Dynamic inCond)
 {
 	auto condition = inCond.Cast<hx::thread::ConditionVariable>();
-  
+
 	condition->acquire();
 }
 bool __hxcpp_condition_try_acquire(Dynamic inCond)
