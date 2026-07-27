@@ -70,7 +70,11 @@
   <flag value="-c"/>
   <flag value="-fpic"/>
   <flag value="-O2" unless="debug"/>
-  
+  <flag value="-march=armv7-a" if="HXCPP_ARMV7" unless="HXCPP_NO_ARCH_LEVEL" />
+  <flag value="-mfpu=neon-vfpv4" if="HXCPP_ARMV7" unless="HXCPP_NO_ARCH_LEVEL" />
+  <flag value="-march=armv8-a" if="HXCPP_ARM64" unless="HXCPP_NO_ARCH_LEVEL" />
+  <flag value="-march=haswell" if="HXCPP_X86" unless="HXCPP_NO_ARCH_LEVEL" />
+  <flag value="-march=x86-64-v3" if="HXCPP_X86_64" unless="HXCPP_NO_ARCH_LEVEL" />
   <!-- Warning Supression -->
   <flag value="-Wno-invalid-offsetof" />
   <flag value="-Wno-return-type-c-linkage" />
