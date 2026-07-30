@@ -23,9 +23,6 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #endif
-#if defined(BLACKBERRY)
-using namespace std;
-#endif
 #ifdef HXCPP_LOAD_DEBUG
 bool gLoadDebug = true;
 #else
@@ -420,22 +417,12 @@ String __hxcpp_get_bin_dir()
   #endif
 #elif defined (ANDROID)
     HX_CSTRING("Android");
-#elif defined(WEBOS)
-    HX_CSTRING("webOS");
-#elif defined(BLACKBERRY)
-    HX_CSTRING("BlackBerry");
 #elif defined(__EMSCRIPTEN__)
     HX_CSTRING("Emscripten");
-#elif defined(TIZEN)
-    HX_CSTRING("Tizen");
 #elif defined(IPHONESIM)
     HX_CSTRING("IPhoneSim");
 #elif defined(IPHONEOS)
     HX_CSTRING("IPhoneOs");
-#elif defined(APPLETVSIM)
-    HX_CSTRING("AppleTVSim");
-#elif defined(APPLETVOS)
-    HX_CSTRING("AppleTVOS");
 #else
   #ifdef HXCPP_ARM64
     HX_CSTRING("LinuxArm64");
@@ -458,13 +445,9 @@ String __hxcpp_get_dll_extension()
     HX_CSTRING(".ios.dylib");
 #elif defined(IPHONESIM)
     HX_CSTRING(".sim.dylib");
-#elif defined(APPLETVOS)
-    HX_CSTRING(".tvos.dylib");
-#elif defined(APPLETVSIM)
-    HX_CSTRING(".sim.dylib");
 #elif defined(__APPLE__)
     HX_CSTRING(".dylib");
-#elif defined(ANDROID) || defined(GPH) || defined(WEBOS)  || defined(BLACKBERRY) || defined(__EMSCRIPTEN__) || defined(TIZEN)
+#elif defined(ANDROID) || defined(__EMSCRIPTEN__)
     HX_CSTRING(".so");
 #else
     HX_CSTRING(".dso");

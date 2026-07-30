@@ -222,9 +222,7 @@ class Cocoapods
    {
       if(defines.exists("ios")) return "ios";
       if(defines.exists("macos")) return "macos";
-      if(defines.exists("tvos")) return "tvos";
-      if(defines.exists("watchos")) return "watchos";
-      Log.error("Unknown platform (expected ios, macos, tvos, watchos).");
+      Log.error("Unknown platform (expected ios, macos).");
       return "";
    }
 

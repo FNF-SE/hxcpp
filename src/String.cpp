@@ -11,10 +11,6 @@
 
 using namespace hx;
 
-#if defined(BLACKBERRY)
-using namespace std;
-#endif
-
 // -------- String ----------------------------------------
 
 

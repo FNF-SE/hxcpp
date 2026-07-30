@@ -30,7 +30,7 @@
    #include <limits.h>
    #ifndef ANDROID
       #include <locale.h>
-      #if !defined(BLACKBERRY) && !defined(EPPC) && !defined(GCW0) && !defined(__GLIBC__)
+      #if !defined(EPPC) && !defined(__GLIBC__)
          #include <xlocale.h>
       #endif
    #endif
@@ -153,7 +153,7 @@ void _hx_std_sys_sleep( double f )
 **/
 bool _hx_std_set_time_locale( String l )
 {
-#if defined(ANDROID) || defined(GCW0)
+#if defined(ANDROID)
     return false;
 #else
 
@@ -264,8 +264,6 @@ String _hx_std_sys_string()
    return HX_CSTRING("Mac");
 #elif defined(ANDROID)
    return HX_CSTRING("Android");
-#elif defined(BLACKBERRY)
-   return HX_CSTRING("BlackBerry");
 #elif defined(__EMSCRIPTEN__)
    return HX_CSTRING("Emscripten");
 #elif defined(EPPC)

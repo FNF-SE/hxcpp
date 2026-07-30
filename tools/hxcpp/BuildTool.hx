@@ -1881,17 +1881,6 @@ class BuildTool
          defines.set("iphone", "iphone");
       }
 
-      if (defines.exists("tvos"))
-      {
-         if (defines.exists("simulator"))
-            defines.set("appletvsim", "appletvsim");
-         else if (!defines.exists ("appletvsim"))
-            defines.set("appletvos", "appletvos");
-         defines.set("appletv", "appletv");
-      }
-
-
-
       if (makefile=="" || Log.verbose)
       {
          printBanner();
@@ -1978,35 +1967,6 @@ class BuildTool
          defines.set("apple","apple");
          defines.set("BINDIR","iPhone");
       }
-      else if (defines.exists("appletvos"))
-      {
-         defines.set("toolchain","appletvos");
-         defines.set("appletv","appletv");
-         defines.set("apple","apple");
-         defines.set("BINDIR","AppleTV");
-      }
-      else if (defines.exists("appletvsim"))
-      {
-         defines.set("toolchain","appletvsim");
-         defines.set("appletv","appletv");
-         defines.set("apple","apple");
-         defines.set("BINDIR","AppleTV");
-      }
-      else if (defines.exists("watchos"))
-      {
-         defines.set("toolchain","watchos");
-         defines.set("apple","apple");
-         defines.set("applewatch","applewatch");
-         defines.set("BINDIR","watchos");
-      }
-      else if (defines.exists("watchsimulator"))
-      {
-         defines.set("toolchain","watchsimulator");
-         defines.set("applewatch","applewatch");
-         defines.set("apple","apple");
-         defines.set("BINDIR","watchsimulator");
-      }
-
       else if (defines.exists("android"))
       {
          defines.set("toolchain","android");
@@ -2031,24 +1991,6 @@ class BuildTool
             }
          }
       }
-      else if (defines.exists("webos"))
-      {
-         defines.set("toolchain","webos");
-         defines.set("webos","webos");
-         defines.set("BINDIR","webOS");
-      }
-      else if (defines.exists("tizen"))
-      {
-         defines.set("toolchain","tizen");
-         defines.set("tizen","tizen");
-         defines.set("BINDIR","Tizen");
-      }
-      else if (defines.exists("blackberry"))
-      {
-         defines.set("toolchain", "blackberry");
-         defines.set("blackberry","blackberry");
-         defines.set("BINDIR","BlackBerry");
-      }
       else if (defines.exists("emcc") || defines.exists("emscripten"))
       {
          defines.set("toolchain","emscripten");
@@ -2056,40 +1998,9 @@ class BuildTool
          defines.set("emscripten","emscripten");
          defines.set("BINDIR","Emscripten");
       }
-      else if (defines.exists("gph"))
-      {
-         defines.set("toolchain","gph");
-         defines.set("gph","gph");
-         defines.set("BINDIR","GPH");
-      }
-      else if (defines.exists ("gcw0"))
-      {
-         defines.set ("toolchain", "gcw0");
-         defines.set ("gcw0", "gcw0");
-         defines.set ("BINDIR", "GCW0");
-      }
-      else if (defines.exists("cygwin") || defines.exists("HXCPP_CYGWIN"))
-      {
-         set64(defines,m64);
-         defines.set("toolchain","cygwin");
-         defines.set("cygwin","cygwin");
-         defines.set("linux","linux");
-         defines.set("BINDIR",m64 ? "Cygwin64":"Cygwin");
-      }
       else if ( (new EReg("window","i")).match(os) )
       {
          defines.set("windows_host","1");
-         // Cross-compile?
-         /*if (defines.exists("rpi"))
-         {
-            defines.set("toolchain","linux");
-            defines.set("xcompile","1");
-            defines.set("linux","linux");
-            defines.set("rpi","1");
-            defines.set("hardfp","1");
-            defines.set("BINDIR", "RPi");
-         }
-         else*/
          {
             set64(defines,m64,arm64);
             defines.set("windows","windows");
@@ -2229,52 +2140,6 @@ class BuildTool
                defines.set("IPHONE_VER",best);
          }
       }
-
-      if (defines.exists("appletv") && !defines.exists("TVOS_VER"))
-      {
-         var dev_path = defines.get("DEVELOPER_DIR") + "/Platforms/AppleTVOS.platform/Developer/SDKs/";
-         if (FileSystem.exists(dev_path))
-         {
-            var best="0.0";
-            var files = FileSystem.readDirectory(dev_path);
-            var extract_version = ~/^AppleTVOS(.+).sdk$/;
-            for(file in files)
-            {
-               if (extract_version.match(file))
-               {
-                  var ver = extract_version.matched(1);
-                  if (Std.parseFloat (ver)>Std.parseFloat (best))
-                     best = ver;
-               }
-            }
-            if (best!="0.0")
-               defines.set("TVOS_VER",best);
-         }
-      }
-
-
-      if (defines.exists("applewatch") && !defines.exists("WATCHOS_VER"))
-      {
-         var dev_path = defines.get("DEVELOPER_DIR") + "/Platforms/WatchOS.platform/Developer/SDKs/";
-         if (FileSystem.exists(dev_path))
-         {
-            var best="0.0";
-            var files = FileSystem.readDirectory(dev_path);
-            var extract_version = ~/^WatchOS(.+).sdk$/;
-            for(file in files)
-            {
-               if (extract_version.match(file))
-               {
-                  var ver = extract_version.matched(1);
-                  if (Std.parseFloat (ver)>Std.parseFloat (best))
-                     best = ver;
-               }
-            }
-            if (best!="0.0")
-               defines.set("WATCHOS_VER",best);
-         }
-      }
-
 
       if (defines.exists("macos") && !defines.exists("MACOSX_VER"))
       {

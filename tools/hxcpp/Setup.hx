@@ -437,10 +437,6 @@ class Setup
       {
          setupAndroidNdk(ioDefines);
       }
-      else if (inWhat=="blackberry")
-      {
-         setupBlackBerryNativeSDK(ioDefines);
-      }
       else if (inWhat=="msvc")
       {
          setupMSVC(ioDefines, ioDefines.exists("HXCPP_M64"), ioDefines.exists("HXCPP_ARM64"), ioDefines.exists("HXCPP_ARMV7"), ioDefines.exists("winrt"));
@@ -681,82 +677,6 @@ class Setup
       if (Log.verbose) Log.println("");
    }
 
-   public static function setupBlackBerryNativeSDK(ioDefines:Hash<String>)
-   {
-      if (!ioDefines.exists ("BLACKBERRY_NDK_ROOT"))
-      {
-          Log.error("Could not find BLACKBERRY_NDK_ROOT variable");
-      }
-
-      var fileName = ioDefines.get ("BLACKBERRY_NDK_ROOT");
-      if (BuildTool.isWindows)
-      {
-         fileName += "\\bbndk-env.bat";
-      }
-      else
-      {
-         fileName += "/bbndk-env.sh";
-      }
-
-      if (FileSystem.exists (fileName))
-      {
-         var fin = sys.io.File.read(fileName, false);
-         try
-         {
-            while(true)
-            {
-               var str = fin.readLine();
-               var split = str.split ("=");
-               var name = StringTools.trim (split[0].substr (split[0].lastIndexOf (" ") + 1));
-               switch (name)
-               {
-                  case "QNX_HOST", "QNX_TARGET", "QNX_HOST_VERSION", "QNX_TARGET_VERSION":
-                     var value = split[1];
-                     if (StringTools.startsWith (value, "${") && split.length > 2)
-                     {
-                        value = split[2].substr (0, split[2].length - 1);
-                     }
-                     if (StringTools.startsWith(value, "\""))
-                     {
-                        value = value.substr (1);
-                     }
-                     if (StringTools.endsWith(value, "\""))
-                     {
-                        value = value.substr (0, value.length - 1);
-                     }
-                     if (name == "QNX_HOST_VERSION" || name == "QNX_TARGET_VERSION")
-                     {
-                        if (Sys.getEnv (name) != null)
-                        {
-                           continue;
-                        }
-                     }
-                     else
-                     {
-                        value = StringTools.replace (value, "$BASE_DIR", ioDefines.get ("BLACKBERRY_NDK_ROOT"));
-                        value = StringTools.replace (value, "%BASE_DIR%", ioDefines.get ("BLACKBERRY_NDK_ROOT"));
-                        value = StringTools.replace (value, "$TARGET", "qnx6");
-                        value = StringTools.replace (value, "%TARGET%", "qnx6");
-                        value = StringTools.replace (value, "$QNX_HOST_VERSION", Sys.getEnv("QNX_HOST_VERSION"));
-                        value = StringTools.replace (value, "$QNX_TARGET_VERSION", Sys.getEnv("QNX_TARGET_VERSION"));
-                        value = StringTools.replace (value, "%QNX_HOST_VERSION%", Sys.getEnv("QNX_HOST_VERSION"));
-                        value = StringTools.replace (value, "%QNX_TARGET_VERSION%", Sys.getEnv("QNX_TARGET_VERSION"));
-                     }
-                     ioDefines.set(name,value);
-                     Sys.putEnv(name,value);
-               }
-            }
-         }
-         catch( ex:Eof )
-         {}
-         fin.close();
-      }
-      else
-      {
-         Log.error("Could not find \"" + fileName + "\"");
-      }
-   }
-
    public static function setupMSVC(ioDefines:Hash<String>, in64:Bool, inArm64:Bool, inArm:Bool, isWinRT:Bool)
    {
       var detectMsvc = !ioDefines.exists("NO_AUTO_MSVC") &&
@@ -811,12 +731,6 @@ class Setup
             extra += "-arm";
         else if (in64)
             extra += "64";
-         var xpCompat = false;
-         if (ioDefines.exists("HXCPP_WINXP_COMPAT"))
-         {
-            Sys.putEnv("HXCPP_WINXP_COMPAT","1");
-            xpCompat = true;
-         }
          Sys.putEnv("msvc_host_arch", ioDefines.exists("windows_arm_host") ? "x86" : "x64" );
 
          var vc_setup_proc = new Process("cmd.exe", ["/C", BuildTool.HXCPP + "\\toolchain\\msvc" + extra + "-setup.bat" ]);

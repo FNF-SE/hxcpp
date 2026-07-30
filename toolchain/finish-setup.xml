@@ -19,8 +19,6 @@
 
 <set name="static_link" value="1" if="iphoneos" unless="dll_import||exe_link" />
 <set name="static_link" value="1" if="iphonesim" unless="dll_import||exe_link" />
-<set name="static_link" value="1" if="appletvos" unless="dll_import||exe_link" />
-<set name="static_link" value="1" if="appletvsim" unless="dll_import||exe_link" />
 
 <set name="LIBPREFIX" value="lib" if="static_link" unless="STATICLIBPREFIX" />
 <set name="LIBPREFIX" value="${STATICLIBPREFIX}" if="static_link" unless="LIBPREFIX" />
@@ -42,13 +40,9 @@
 <set name="STD_MODULE_LINK" value="exe" if="HXCPP_JS_PRIME"/>
 
 
-<section if="iphonesim||iphoneos||appletvsim||appletvos||watchsimulator||watchos">
+<section if="iphonesim||iphoneos">
    <set name="DEVICEEXTRA" value=".iphonesim" if="iphonesim" />
    <set name="DEVICEEXTRA" value=".iphoneos" if="iphoneos" />
-   <set name="DEVICEEXTRA" value=".appletvsim" if="appletvsim" />
-   <set name="DEVICEEXTRA" value=".appletvos" if="appletvos" />
-   <set name="DEVICEEXTRA" value=".watchsimulator" if="watchsimulator" />
-   <set name="DEVICEEXTRA" value=".watchos" if="watchos" />
    <set name="LIBEXTRA" value="${DEVICEEXTRA}-x86" if="HXCPP_M32 || HXCPP_X86" unless="HXCPP_ARMV7 || HXCPP_ARMV7S" />
    <set name="LIBEXTRA" value="${DEVICEEXTRA}-x86_64" if="HXCPP_M64 || HXCPP_X86_64" unless="HXCPP_ARM64" />
    <set name="LIBEXTRA" value="${DEVICEEXTRA}-armv6" if="HXCPP_ARMV6" />
@@ -57,14 +51,10 @@
    <unset name="DEVICEEXTRA" />
 </section>
 <section unless="LIBEXTRA||windows||linux||mac">
-   <set name="LIBEXTRA" value="-x86" if="blackberry"/>
-   <set name="LIBEXTRA" value="" if="blackberry" unless="simulator" />
    <set name="LIBEXTRA" value="-x86" if="HXCPP_M32 || HXCPP_X86" unless="HXCPP_ARMV7 || HXCPP_ARMV7S" />
    <set name="LIBEXTRA" value="-x86_64" if="HXCPP_M64 || HXCPP_X86_64" unless="HXCPP_ARM64" />
    <set name="LIBEXTRA" value="-v7" if="HXCPP_ARMV7 || HXCPP_ARMV7S" />
    <set name="LIBEXTRA" value="-64" if="HXCPP_ARM64" />
-   <set name="LIBEXTRA" value="-x86" if="tizen"/>
-   <set name="LIBEXTRA" value="" if="tizen" unless="simulator" />
 </section>
 <set name="LIBEXT" value=".a" />
 <set name="LIBEXT" value=".lib" if="windows" unless="mingw" />

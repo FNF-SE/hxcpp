@@ -64,7 +64,7 @@
   #include <stddef.h>
 #endif
 
-#if defined(__EMSCRIPTEN__)  || defined(_ARM_) || defined(__arm__) || defined(GCW0)
+#if defined(__EMSCRIPTEN__)  || defined(_ARM_) || defined(__arm__)
    #define HXCPP_ALIGN_FLOAT
 #endif
 

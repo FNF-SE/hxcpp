@@ -16,13 +16,7 @@ typedef int64_t __int64;
 #ifdef ANDROID
 #include <android/log.h>
 #endif
-#ifdef WEBOS
-#include <syslog.h>
-#endif
-#ifdef TIZEN
-#include <dlog.h>
-#endif
-#if defined(HX_MACOS) || defined(HX_LINUX) || defined(BLACKBERRY) || defined(GCW0)
+#if defined(HX_MACOS) || defined(HX_LINUX)
 #include <unistd.h>
 #endif
 #include <string>
@@ -40,12 +34,8 @@ typedef int64_t __int64;
 
 #ifdef HX_WINRT
 #define PRINTF WINRT_PRINTF
-#elif defined(TIZEN)
-#define PRINTF(fmt, ...) dlog_dprint(DLOG_INFO, "trace", fmt, __VA_ARGS__);
 #elif defined(HX_ANDROID) && !defined(HXCPP_EXE_LINK)
 #define PRINTF(fmt, ...) __android_log_print(ANDROID_LOG_INFO, "trace", fmt, __VA_ARGS__);
-#elif defined(WEBOS)
-#define PRINTF(fmt, ...) syslog(LOG_INFO, "trace", fmt, __VA_ARGS__);
 #else
 #define PRINTF printf
 #endif

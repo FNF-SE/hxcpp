@@ -51,10 +51,6 @@ finish-setup.xml is where the conventions are set. These variables include:
      +  .iphoneos-v7
      +  .iphoneos-v7s
      +  .iphoneos-64
-     +  .appletvsim-64
-     +  .appletvsim
-     +  .watchos
-     +  .watchsimulator
      +  -x86
      +  -v7
      +  -64

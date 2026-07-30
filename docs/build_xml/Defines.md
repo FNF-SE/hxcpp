@@ -75,17 +75,8 @@ Defines affecting target architecture.
 | *HXCPP_X86_64*           | Compile android for x86_64 architecture |
 | *iphoneos*               | Compile for iphone iOS |
 | *iphonesim*              | Compile for iphone simulator |
-| *appletvos*              | Compile for apple tvOS |
-| *appletvsim*             | Compile for apple tvOS simulator |
-| *watchos*                | Compile for apple watchOS |
-| *watchsimulator*         | Compile for apple watchOS simulator |
-| *webos*                  | Compile for webOS |
-| *tizen*                  | Compile for Tizen |
-| *blackberry*             | Compile for Blackberry |
 | *emscripten*             | Compile for Emscripten |
-| *cygwin*                 | Compile for windows using cygwin |
 | *linux*                  | (Cross) Compile for linux |
 | *mingw*                  | Compile for windows using mingw |
 | *HXCPP_MINGW*            | Compile for windows using mingw |
 | *NO_AUTO_MSVC*           | Do not detect msvc location, use the one already in the executable path |
-| *HXCPP_WINXP_COMPAT*     | Remain compatible with Windows XP. Disables condition variables. No effect on ARM. |

@@ -17,11 +17,6 @@
 </section>
 <set name="CPP_ABI" value="${ABI}" />
 
-<unset name="HXCPP_WINXP_COMPAT" if="HXCPP_ARM64" />
-
-<set name="XPOBJ" value="xp" if="HXCPP_WINXP_COMPAT" />
-
-
 <set name="OBJCACHE" value="-c" if="HXCPP_COMPILE_CACHE"/>
 
 <unset name="HXCPP_FORCE_PDB_SERVER" if="HXCPP_COMPILE_CACHE" />
@@ -29,15 +24,11 @@
 <set name="SUBSYSTEMWINDOWS" value="1" if="no_console" unless="HXCPP_DEBUGGER" />
 <set name="SUBSYSTEMCONSOLE" value="1" unless="SUBSYSTEMWINDOWS" />
 
-<section if="HXCPP_WINXP_COMPAT">
-   <set name="SUBSYSTEM_VER" value=",5.01" unless="HXCPP_M64" />
-   <set name="SUBSYSTEM_VER" value=",5.02" if="HXCPP_M64" />
-</section>
 <set name="SUBSYSTEM_VER" value=",6.02" if="HXCPP_ARM64" />
 
-<set name="MSVC_OBJ_DIR" value="obj/msvc${MSVC_VER}${OBJEXT}${OBJCACHE}${XPOBJ}" unless="winrt" />
-<set name="MSVC_OBJ_DIR" value="obj/msvc${MSVC_VER}-rt${OBJEXT}${OBJCACHE}${XPOBJ}" if="winrt" />
-<set name="MSVC_OBJ_DIR" value="obj/msvc${MSVC_VER}-arm${OBJEXT}${OBJCACHE}${XPOBJ}" if="HXCPP_ARM64" />
+<set name="MSVC_OBJ_DIR" value="obj/msvc${MSVC_VER}${OBJEXT}${OBJCACHE}" unless="winrt" />
+<set name="MSVC_OBJ_DIR" value="obj/msvc${MSVC_VER}-rt${OBJEXT}${OBJCACHE}" if="winrt" />
+<set name="MSVC_OBJ_DIR" value="obj/msvc${MSVC_VER}-arm${OBJEXT}${OBJCACHE}" if="HXCPP_ARM64" />
 
 <set name="MACHINE" value="x86" />
 <set name="MACHINE" value="x64" if="HXCPP_M64" />
