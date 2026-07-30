@@ -84,7 +84,6 @@ class BuildTool
    public static var isWindows = false;
    public static var isWindowsArm = false;
    public static var isLinux = false;
-   public static var isRPi = false;
    public static var isMac = false;
    public static var targetKey:String;
    public static var instance:BuildTool;
@@ -136,34 +135,37 @@ class BuildTool
 
       instance = this;
 
-      m64 = mDefines.exists("HXCPP_M64") || mDefines.exists("HXCPP_X86_64");
-      m32 = mDefines.exists("HXCPP_M32") || mDefines.exists("HXCPP_X86");
-      arm64 = mDefines.exists("HXCPP_ARM64");
-      armv7 = mDefines.exists("HXCPP_ARMV7");
-      var otherArmArchitecture = mDefines.exists("HXCPP_ARMV6") || mDefines.exists("HXCPP_ARMV7S");
-      if (m64==m32 && !arm64 && !armv7 && !otherArmArchitecture)
+      if (!(mDefines.exists("emcc") || mDefines.exists("emscripten")))
       {
-         var arch = mDefines.get("HXCPP_ARCH");
-         if (arch!=null)
+         m64 = mDefines.exists("HXCPP_M64") || mDefines.exists("HXCPP_X86_64");
+         m32 = mDefines.exists("HXCPP_M32") || mDefines.exists("HXCPP_X86");
+         arm64 = mDefines.exists("HXCPP_ARM64");
+         armv7 = mDefines.exists("HXCPP_ARMV7");
+         var otherArmArchitecture = mDefines.exists("HXCPP_ARMV6") || mDefines.exists("HXCPP_ARMV7S");
+         if (m64==m32 && !arm64 && !armv7 && !otherArmArchitecture)
          {
-            m64 = arch=="x86_64";
-            m32 = arch=="x86";
-            arm64 = arch=="arm64";
-            armv7 = arch=="armv7";
-         }
-         else
-         {
-            var hostArch = getArch();
+            var arch = mDefines.get("HXCPP_ARCH");
+            if (arch!=null)
+            {
+               m64 = arch=="x86_64";
+               m32 = arch=="x86";
+               arm64 = arch=="arm64";
+               armv7 = arch=="armv7";
+            }
+            else
+            {
+               var hostArch = getArch();
 
-            // Default to the current OS version.  windowsArm runs m32 code too
-            m64 = hostArch=="m64";
-            m32 = hostArch=="m32";
-            arm64 = hostArch=="arm64";
-            armv7 = hostArch=="armv7";
-         }
+               // Default to the current OS version.  windowsArm runs m32 code too
+               m64 = hostArch=="m64";
+               m32 = hostArch=="m32";
+               arm64 = hostArch=="arm64";
+               armv7 = hostArch=="armv7";
+            }
 
-         mDefines.remove(m32 ? "HXCPP_M64" : "HXCPP_M32");
-         set64(mDefines,m64,arm64);
+            mDefines.remove(m32 ? "HXCPP_M64" : "HXCPP_M32");
+            set64(mDefines,m64,arm64);
+         }
       }
 
       Profile.setEntry("parse xml");
@@ -1736,9 +1738,6 @@ class BuildTool
          return;
       }
 
-
-      isRPi = false;
-
       is64 = getArch()!="m32";
       var dirtyList = new Array<String>();
 
@@ -2081,7 +2080,7 @@ class BuildTool
       {
          defines.set("windows_host","1");
          // Cross-compile?
-         if (defines.exists("rpi"))
+         /*if (defines.exists("rpi"))
          {
             defines.set("toolchain","linux");
             defines.set("xcompile","1");
@@ -2090,7 +2089,7 @@ class BuildTool
             defines.set("hardfp","1");
             defines.set("BINDIR", "RPi");
          }
-         else
+         else*/
          {
             set64(defines,m64,arm64);
             defines.set("windows","windows");
@@ -2129,14 +2128,6 @@ class BuildTool
                defines.set("mingw","mingw");
             }
          }
-      }
-      else if ( isRPi )
-      {
-         defines.set("toolchain","linux");
-         defines.set("linux","linux");
-         defines.set("rpi","1");
-         defines.set("hardfp","1");
-         defines.set("BINDIR", "RPi");
       }
       else if ( (new EReg("linux","i")).match(os) )
       {
@@ -2185,9 +2176,8 @@ class BuildTool
          }
          else if(defines.exists("windows"))
          {
-            /*defines.set("toolchain","mingw");
-            defines.set("mingw", "mingw");*/
-            defines.set("toolchain","msvc");
+            defines.set("toolchain","mingw");
+            defines.set("mingw", "mingw");
             defines.set("xcompile","1");
             defines.set("BINDIR", arm64 ? "WindowsArm64" : armv7 ? "WindowsArm" : m64 ? "Windows64":"Windows");
          }

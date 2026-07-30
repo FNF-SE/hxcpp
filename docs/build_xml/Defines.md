@@ -58,34 +58,34 @@ Other defines:
 
 Defines affecting target architecture.
 
-| Define                  | Meaning            |
-|-------------------------|--------------------|
-| *HXCPP_M32*             | Force 32-bit compile for current desktop |
-| *HXCPP_M64*             | Force 64-bit compile for current desktop |
-| *HXCPP_ARMV6*           | Compile arm-based devices for armv6 |
-| *HXCPP_ARM64*           | Compile arm-based devices for 64 bits |
-| *HXCPP_ARMV7*           | Compile arm-based devices for armv7 |
-| *HXCPP_ARMV7S*          | Compile arm-based devices for armv7s |
-| *winrt*                 | Compile for windowsRt/windows UWP |
-| *android*               | Compile for android |
+| Define                   | Meaning            |
+|--------------------------|--------------------|
+| *HXCPP_M32*              | Force 32-bit compile for current desktop |
+| *HXCPP_M64*              | Force 64-bit compile for current desktop |
+| *HXCPP_ARMV6*            | Compile arm-based devices for armv6 |
+| *HXCPP_ARM64*            | Compile arm-based devices for 64 bits |
+| *HXCPP_ARMV7*            | Compile arm-based devices for armv7 |
+| *HXCPP_ARMV7S*           | Compile arm-based devices for armv7s |
+| *winrt*                  | Compile for windowsRt/windows UWP |
+| *android*                | Compile for android |
 | *HXCPP_ANDROID_PLATFORM* | Specify the android platform for NDK compilation |
-| *ANDROID_NDK_ROOT*      | Specify the location of the android NDK toolchain |
-| *ANDROID_NDK_DIR*       | Specify the search location for finding the android NDK toolchain |
-| *HXCPP_X86*             | Compile android for x86 architecture |
-| *iphoneos*              | Compile for iphone iOS |
-| *iphonesim*             | Compile for iphone simulator |
-| *appletvos*             | Compile for apple tvOS |
-| *appletvsim*            | Compile for apple tvOS simulator |
-| *watchos*               | Compile for apple watchOS |
-| *watchsimulator*        | Compile for apple watchOS simulator |
-| *webos*                 | Compile for webOS |
-| *tizen*                 | Compile for Tizen |
-| *blackberry*            | Compile for Blackberry |
-| *emscripten*            | Compile for Emscripten |
-| *cygwin*                | Compile for windows using cygwin |
-| *linux*                 | (Cross) Compile for linux |
-| *rpi*                   | (Cross) Compile for raspberry pi |
-| *mingw*                 | Compile for windows using mingw |
-| *HXCPP_MINGW*           | Compile for windows using mingw |
-| *NO_AUTO_MSVC*          | Do not detect msvc location, use the one already in the executable path |
-| *HXCPP_WINXP_COMPAT*    | Remain compatible with Windows XP. Disables condition variables. No effect on ARM. |
+| *ANDROID_NDK_ROOT*       | Specify the location of the android NDK toolchain |
+| *ANDROID_NDK_DIR*        | Specify the search location for finding the android NDK toolchain |
+| *HXCPP_X86*              | Compile android for x86 architecture |
+| *HXCPP_X86_64*           | Compile android for x86_64 architecture |
+| *iphoneos*               | Compile for iphone iOS |
+| *iphonesim*              | Compile for iphone simulator |
+| *appletvos*              | Compile for apple tvOS |
+| *appletvsim*             | Compile for apple tvOS simulator |
+| *watchos*                | Compile for apple watchOS |
+| *watchsimulator*         | Compile for apple watchOS simulator |
+| *webos*                  | Compile for webOS |
+| *tizen*                  | Compile for Tizen |
+| *blackberry*             | Compile for Blackberry |
+| *emscripten*             | Compile for Emscripten |
+| *cygwin*                 | Compile for windows using cygwin |
+| *linux*                  | (Cross) Compile for linux |
+| *mingw*                  | Compile for windows using mingw |
+| *HXCPP_MINGW*            | Compile for windows using mingw |
+| *NO_AUTO_MSVC*           | Do not detect msvc location, use the one already in the executable path |
+| *HXCPP_WINXP_COMPAT*     | Remain compatible with Windows XP. Disables condition variables. No effect on ARM. |

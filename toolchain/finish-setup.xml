@@ -12,7 +12,6 @@
 <set name="F32" value="-f32" if="HXCPP_FLOAT32"/>
 <set name="NEEDS_NC" value="-nc" if="windows"/>
 <set name="NOCONSOLE" value="${NEEDS_NC}" if="no_console"/>
-<set name="RPI" value="-rpi" if="rpi"/>
 <set name="APIFP" value="-hfp" if="hardfp"/>
 <set name="CPPIA_NO_JIT" value="1" if="emscripten"/>
 
@@ -37,7 +36,7 @@
 <set name="HXCPP_OPTIMIZE_LINK_INCREMENTAL" value="1" if="HXCPP_FAST_LINK HXCPP_OPTIMIZE_LINK" unless="debug" />
 <set name="OBJOPT" value="-opt" if="HXCPP_OPTIMIZE_LINK" unless="debug" />
 <set name="OBJOPT" value="-optinc" if="HXCPP_OPTIMIZE_LINK_INCREMENTAL" unless="debug" />
-<set name="OBJEXT" value="${MARCH}${F32}${STAT}${OBJDBG}${OBJOPT}${NOCONSOLE}${RPI}${APIFP}${PRIME}" />
+<set name="OBJEXT" value="${MARCH}${F32}${STAT}${OBJDBG}${OBJOPT}${NOCONSOLE}${APIFP}${PRIME}" />
 
 <set name="STD_MODULE_LINK" value="static_link" if="static_link"/>
 <set name="STD_MODULE_LINK" value="exe" if="HXCPP_JS_PRIME"/>
@@ -112,7 +111,7 @@
       <unset name="HXCPP_OPTIMIZE_LINK_INCREMENTAL"/>
       <set name="HXCPP_OPTIMIZE_LINK" value="1"/>
       <set name="OBJOPT" value="-opt" if="HXCPP_OPTIMIZE_LINK || HXCPP_OPTIMIZE_LINK_INCREMENTAL" unless="debug" />
-      <set name="OBJEXT" value="${MARCH}${F32}${STAT}${OBJDBG}${OBJOPT}${NOCONSOLE}${RPI}${APIFP}${PRIME}" />
+      <set name="OBJEXT" value="${MARCH}${F32}${STAT}${OBJDBG}${OBJOPT}${NOCONSOLE}${APIFP}${PRIME}" />
    </section>
 </section>
 </xml>
