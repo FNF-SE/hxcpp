@@ -52,6 +52,7 @@ finish-setup.xml is where the conventions are set. These variables include:
      +  .iphoneos-v7s
      +  .iphoneos-64
      +  -x86
+     +  -x86_64
      +  -v7
      +  -64
   - HX_LINK_SUFFIX = LIBEXTRA | -19 (msvc 19)
