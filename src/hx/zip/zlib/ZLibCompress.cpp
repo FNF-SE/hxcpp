@@ -8,8 +8,8 @@
 
 hx::zip::Compress hx::zip::Compress_obj::create(int level)
 {
-	auto handle = std::unique_ptr<z_stream>(new z_stream());
-	auto error  = deflateInit(handle.get(), level);
+	auto handle = std::unique_ptr<zng_stream>(new zng_stream());
+	auto error  = zng_deflateInit(handle.get(), level);
 
 	if (error != Z_OK)
 	{
@@ -22,14 +22,14 @@ hx::zip::Compress hx::zip::Compress_obj::create(int level)
 Array<uint8_t> hx::zip::Compress_obj::run(cpp::marshal::View<uint8_t> src, int level)
 {
 	auto error  = 0;
-	auto handle = std::unique_ptr<z_stream>(new z_stream());
+	auto handle = std::unique_ptr<zng_stream>(new zng_stream());
 
-	if (Z_OK != (error = deflateInit(handle.get(), level)))
+	if (Z_OK != (error = zng_deflateInit(handle.get(), level)))
 	{
 		hx::Throw(HX_CSTRING("ZLib Error"));
 	}
 
-	auto bounds = deflateBound(handle.get(), src.length);
+	auto bounds = zng_deflateBound(handle.get(), src.length);
 	if (bounds > std::numeric_limits<int32_t>::max()) {
 		hx::Throw(HX_CSTRING("Size Error"));
 	}
@@ -43,19 +43,19 @@ Array<uint8_t> hx::zip::Compress_obj::run(cpp::marshal::View<uint8_t> src, int l
 	handle->avail_out = dst.length;
 
 	EnterGCFreeZone();
-	error = deflate(handle.get(), Z_FINISH);
+	error = zng_deflate(handle.get(), Z_FINISH);
 	ExitGCFreeZone();
 
 	if (Z_STREAM_END != error) {
 		hx::Throw(HX_CSTRING("Compression failed"));
 	}
 
-	deflateEnd(handle.get());
+	zng_deflateEnd(handle.get());
 
 	return output->slice(0, static_cast<int>(handle->total_out));
 }
 
-hx::zip::zlib::ZLibCompress::ZLibCompress(z_stream* inHandle) : handle(inHandle), flush(0)
+hx::zip::zlib::ZLibCompress::ZLibCompress(zng_stream* inHandle) : handle(inHandle), flush(0)
 {
 	_hx_set_finalizer(this, [](Dynamic obj) { reinterpret_cast<ZLibCompress*>(obj.mPtr)->close(); });
 }
@@ -73,7 +73,7 @@ hx::zip::Result hx::zip::zlib::ZLibCompress::execute(cpp::marshal::View<uint8_t>
 	handle->avail_out = dst.length;
 
 	EnterGCFreeZone();
-	auto error = deflate(handle, flush);
+	auto error = zng_deflate(handle, flush);
 	ExitGCFreeZone();
 
 	if (error < 0)
@@ -126,7 +126,7 @@ int hx::zip::zlib::ZLibCompress::getBounds(const int length)
 		ZLIB_OBJ_CLOSED;
 	}
 
-	return static_cast<int>(deflateBound(handle, length));
+	return static_cast<int>(zng_deflateBound(handle, length));
 }
 
 void hx::zip::zlib::ZLibCompress::close()
@@ -136,7 +136,7 @@ void hx::zip::zlib::ZLibCompress::close()
 		return;
 	}
 
-	deflateEnd(handle);
+	zng_deflateEnd(handle);
 
 	handle = nullptr;
 

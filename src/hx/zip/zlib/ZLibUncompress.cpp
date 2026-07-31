@@ -8,8 +8,8 @@
 
 hx::zip::Uncompress hx::zip::Uncompress_obj::create(int windowSize)
 {
-	auto handle = std::unique_ptr<z_stream>(new z_stream());
-	auto error  = inflateInit2(handle.get(), windowSize);
+	auto handle = std::unique_ptr<zng_stream>(new zng_stream());
+	auto error  = zng_inflateInit2(handle.get(), windowSize);
 
 	if (error != Z_OK)
 	{
@@ -21,8 +21,8 @@ hx::zip::Uncompress hx::zip::Uncompress_obj::create(int windowSize)
 
 Array<uint8_t> hx::zip::Uncompress_obj::run(cpp::marshal::View<uint8_t> src, int bufferSize)
 {
-	auto handle = std::unique_ptr<z_stream>(new z_stream());
-	auto error  = inflateInit2(handle.get(), 15);
+	auto handle = std::unique_ptr<zng_stream>(new zng_stream());
+	auto error  = zng_inflateInit2(handle.get(), 15);
 
 	if (error != Z_OK)
 	{
@@ -43,7 +43,7 @@ Array<uint8_t> hx::zip::Uncompress_obj::run(cpp::marshal::View<uint8_t> src, int
 		handle->avail_out = buffer.size();
 
 		EnterGCFreeZone();
-		error = inflate(handle.get(), Z_SYNC_FLUSH);
+		error = zng_inflate(handle.get(), Z_SYNC_FLUSH);
 		ExitGCFreeZone();
 
 		if (error < 0)
@@ -59,7 +59,7 @@ Array<uint8_t> hx::zip::Uncompress_obj::run(cpp::marshal::View<uint8_t> src, int
 	return output;
 }
 
-hx::zip::zlib::ZLibUncompress::ZLibUncompress(z_stream* inHandle) : handle(inHandle), flush(0)
+hx::zip::zlib::ZLibUncompress::ZLibUncompress(zng_stream* inHandle) : handle(inHandle), flush(0)
 {
 	_hx_set_finalizer(this, [](Dynamic obj) { reinterpret_cast<ZLibUncompress*>(obj.mPtr)->close(); });
 }
@@ -77,7 +77,7 @@ hx::zip::Result hx::zip::zlib::ZLibUncompress::execute(cpp::marshal::View<uint8_
 	handle->avail_out = dst.length;
 
 	EnterGCFreeZone();
-	auto error = inflate(handle, flush);
+	auto error = zng_inflate(handle, flush);
 	ExitGCFreeZone();
 
 	if (error < 0)
@@ -130,7 +130,7 @@ void hx::zip::zlib::ZLibUncompress::close()
 		return;
 	}
 
-	inflateEnd(handle);
+	zng_inflateEnd(handle);
 
 	handle = nullptr;
 
