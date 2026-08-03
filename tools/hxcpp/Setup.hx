@@ -439,7 +439,7 @@ class Setup
       }
       else if (inWhat=="msvc")
       {
-         setupMSVC(ioDefines, ioDefines.exists("HXCPP_M64"), ioDefines.exists("HXCPP_ARM64"), ioDefines.exists("HXCPP_ARMV7"), ioDefines.exists("winrt"));
+         setupMSVC(ioDefines, ioDefines.exists("HXCPP_M64"), ioDefines.exists("HXCPP_ARM64"), ioDefines.exists("winrt"));
       }
       else if (inWhat=="pdbserver")
       {
@@ -677,7 +677,7 @@ class Setup
       if (Log.verbose) Log.println("");
    }
 
-   public static function setupMSVC(ioDefines:Hash<String>, in64:Bool, inArm64:Bool, inArm:Bool, isWinRT:Bool)
+   public static function setupMSVC(ioDefines:Hash<String>, in64:Bool, inArm64:Bool, isWinRT:Bool)
    {
       var detectMsvc = !ioDefines.exists("NO_AUTO_MSVC") &&
                        !ioDefines.exists("HXCPP_MSVC_CUSTOM");
@@ -727,8 +727,6 @@ class Setup
             extra += "-winrt";
         if (inArm64)
             extra += "-arm64";
-	else if (inArm)
-            extra += "-arm";
         else if (in64)
             extra += "64";
          Sys.putEnv("msvc_host_arch", ioDefines.exists("windows_arm_host") ? "x86" : "x64" );
