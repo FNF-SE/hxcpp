@@ -51,7 +51,6 @@
   <flag value="-flto" if="HXCPP_OPTIMIZE_LINK" unless="debug || HXCPP_LTO_THIN"/>
   <flag value="-flto=thin" if="HXCPP_LTO_THIN" unless="debug"/>
   <objdir value="obj/darwin${OBJEXT}/" />
-  <flag value="-msse4.1" if="HXCPP_SSE4" unless="HXCPP_ARM" />
   <flag value="-march=x86-64-v3" unless="HXCPP_ARM64 || HXCPP_M32 || HXCPP_NO_ARCH_LEVEL" />
   <outflag value="-o"/>
   <ext value=".o"/>
