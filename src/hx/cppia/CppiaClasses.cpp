@@ -28,7 +28,7 @@ struct CppiaEnumConstructor
       int nameId;
       int typeId;
    };
- 
+
    std::vector<Arg> args;
    CppiaClassInfo   *classInfo;
    int              nameId;
@@ -49,7 +49,7 @@ struct CppiaEnumConstructor
          int typeId = inStream.getInt();
          args.push_back( Arg(nameId,typeId) );
       }
-         
+
    }
    hx::Object *create( Array<Dynamic> inArgs )
    {
@@ -173,7 +173,7 @@ void SLJIT_CALL createEnum(hx::Class_obj *inClass, String *inName, int inArgs)
       for(int i=0;i<inArgs;i++)
          args[i] = Dynamic(base[i]);
       base[0] = inClass->ConstructEnum(*inName, args).mPtr;
-  
+
    CATCH_NATIVE
    ctx->pointer = oldPointer;
 }
@@ -345,6 +345,9 @@ CppiaClassInfo::CppiaClassInfo(CppiaModule &inCppia) : cppia(inCppia)
    enumMeta = 0;
    isInterface = false;
    interfaceSlotSize = 0;
+   vtableSlotCount = 0;
+   hostVTableSlots = 0;
+   unloaded = false;
    superType = 0;
    typeId = 0;
    vtable = 0;
@@ -363,6 +366,9 @@ class CppiaClass *getCppiaClass()
 
 hx::Object *CppiaClassInfo::createInstance(CppiaCtx *ctx,Expressions &inArgs, bool inCallNew)
 {
+   if (unloaded)
+      hx::Throw( HX_CSTRING("Cannot construct ") + String(name.c_str()) + HX_CSTRING(", its class was unloaded") );
+
    hx::Object *obj = haxeBase->factory(vtable,extraData);
 
    createDynamicFunctions(obj);
@@ -375,6 +381,9 @@ hx::Object *CppiaClassInfo::createInstance(CppiaCtx *ctx,Expressions &inArgs, bo
 
 hx::Object *CppiaClassInfo::createInstance(CppiaCtx *ctx,Array<Dynamic> &inArgs)
 {
+   if (unloaded)
+      hx::Throw( HX_CSTRING("Cannot construct ") + String(name.c_str()) + HX_CSTRING(", its class was unloaded") );
+
    hx::Object *obj = haxeBase->factory(vtable,extraData);
 
    createDynamicFunctions(obj);
@@ -402,6 +411,41 @@ void *CppiaClassInfo::getHaxeBaseVTable()
 int CppiaClassInfo::getScriptVTableOffset()
 {
    return haxeBase ? (int)(haxeBase->mDataOffset - sizeof(void *)) : sizeof(hx::Object);
+}
+
+void **CppiaClassInfo::getSuperVTable(int inSlot)
+{
+   if (!vtable || inSlot < 0 || inSlot >= vtableSlotCount)
+      return 0;
+
+   if ((int)superVtables.size() <= inSlot)
+      superVtables.resize(inSlot + 1, 0);
+
+   if (superVtables[inSlot])
+      return superVtables[inSlot];
+
+   int count = vtableSlotCount + 2 + interfaceSlotSize;
+   void **base = vtable - interfaceSlotSize - 1;
+
+   void **copy = new void *[count];
+   memcpy(copy, base, sizeof(void *) * count);
+
+   copy += interfaceSlotSize + 1;
+   copy[inSlot] = 0;
+
+   superVtables[inSlot] = copy;
+
+   return copy;
+}
+
+
+void CppiaClassInfo::freeSuperVTables()
+{
+   for(int i=0;i<(int)superVtables.size();i++)
+      if (superVtables[i])
+         delete [] (superVtables[i] - interfaceSlotSize - 1);
+
+   superVtables.clear();
 }
 
 
@@ -677,6 +721,52 @@ CppiaEnumConstructor *CppiaClassInfo::findEnum(int inFieldId)
          return enumConstructors[i];
    return 0;
 }
+
+// Drops the class back to its host base without freeing anything that a raw pointer still reaches.
+void CppiaClassInfo::deactivate()
+{
+   if (unloaded)
+      return;
+   unloaded = true;
+
+   if (vtable)
+   {
+      for(int i=0;i<hostVTableSlots && i<vtableSlotCount;i++)
+         vtable[i] = 0;
+
+      vtable[-1] = this;
+   }
+
+   // These all hold ScriptCallable pointers into the expression graph that is about to be freed.
+   memberFunctions.clear();
+   staticFunctions.clear();
+   memberGetters.clear();
+   memberSetters.clear();
+   staticGetters.clear();
+   staticSetters.clear();
+   newFunc = 0;
+   initExpr = 0;
+   enumMeta = 0;
+
+   // Var initialisers are expressions, and nothing runs them again after this point.
+   for(int i=0;i<memberVars.size();i++)
+      memberVars[i]->init = 0;
+   for(int i=0;i<staticVars.size();i++)
+      staticVars[i]->init = 0;
+
+   // Statics are still marked through the module, so clearing them is what actually releases the memory.
+   for(int i=0;i<staticVars.size();i++)
+   {
+      staticVars[i]->objVal = null();
+      staticVars[i]->stringVal = String();
+   }
+   for(int i=0;i<staticDynamicFunctions.size();i++)
+   {
+      staticDynamicFunctions[i]->objVal = null();
+      staticDynamicFunctions[i]->stringVal = String();
+   }
+}
+
 
 void CppiaClassInfo::mark(hx::MarkContext *__inCtx)
 {
@@ -1063,7 +1153,7 @@ void CppiaClassInfo::linkTypes()
 
 
    DBGLOG("  script member vars size = %d\n", extraData);
- 
+
    for(int i=0;i<staticVars.size();i++)
    {
       DBGLOG("   link static var %s\n", cppia.identStr(staticVars[i]->nameId));
@@ -1087,6 +1177,7 @@ void CppiaClassInfo::linkTypes()
 
 
    int vtableSlot = table.size();
+   hostVTableSlots = vtableSlot;
    for(int i=0;i<memberFunctions.size();i++)
    {
       int idx = -1;
@@ -1169,6 +1260,7 @@ void CppiaClassInfo::linkTypes()
    if (interfaceSlotSize)
       interfaceSlotSize++;
 
+   vtableSlotCount = vtableSlot;
    vtable = new void*[vtableSlot + 2 + interfaceSlotSize];
    memset(vtable, 0, sizeof(void *)*(vtableSlot+2+interfaceSlotSize));
    vtable += interfaceSlotSize;
@@ -1359,7 +1451,7 @@ void CppiaClassInfo::init(CppiaCtx *ctx, int inPhase)
    unsigned char *pointer = ctx->pointer;
    ctx->push( (hx::Object *) 0 ); // this
    AutoStack save(ctx,pointer);
- 
+
    if (inPhase==0)
    {
       for(int i=0;i<staticVars.size();i++)
@@ -1389,6 +1481,10 @@ void CppiaClassInfo::init(CppiaCtx *ctx, int inPhase)
 
 Dynamic CppiaClassInfo::getStaticValue(const String &inName,hx::PropertyAccess  inCallProp)
 {
+   if (unloaded)
+      hx::Throw( HX_CSTRING("Cannot read ") + String(name.c_str()) + HX_CSTRING(".") + inName +
+                 HX_CSTRING(", its class was unloaded") );
+
    if (inCallProp==paccDynamic)
       inCallProp = isNativeProperty(inName) ? paccAlways : paccNever;
    if (inCallProp)
@@ -1423,13 +1519,16 @@ Dynamic CppiaClassInfo::getStaticValue(const String &inName,hx::PropertyAccess  
          return var.getStaticValue();
    }
 
-   printf("Get static field not found (%s) %s\n", name.c_str(),inName.out_str());
+   DBGLOG("Get static field not found (%s) %s\n", name.c_str(),inName.out_str());
    return null();
 }
 
 
 bool CppiaClassInfo::hasStaticValue(const String &inName)
 {
+   if (unloaded)
+      return false;
+
    if (findStaticGetter(inName))
       return true;
 
@@ -1455,6 +1554,10 @@ bool CppiaClassInfo::hasStaticValue(const String &inName)
 
 Dynamic CppiaClassInfo::setStaticValue(const String &inName,const Dynamic &inValue ,hx::PropertyAccess  inCallProp)
 {
+   if (unloaded)
+      hx::Throw( HX_CSTRING("Cannot write ") + String(name.c_str()) + HX_CSTRING(".") + inName +
+                 HX_CSTRING(", its class was unloaded") );
+
    if (inCallProp==paccDynamic)
       inCallProp = isNativeProperty(inName) ? paccAlways : paccNever;
    if (inCallProp)
